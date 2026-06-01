@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased font-sans selection:bg-brand-500 selection:text-white;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Custom premium visual style utilities */
+.glassmorphism {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glassmorphism-card {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glassmorphism-card:hover {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(99, 123, 255, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(99, 123, 255, 0.15);
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-brand-400 via-brand-500 to-indigo-400 bg-clip-text text-transparent;
+}
+
+/* Micro-animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03);
+  }
+}
+
+.animate-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+/* Custom Input glowing focus ring */
+.input-glow:focus {
+  outline: none;
+  border-color: rgba(99, 123, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(99, 123, 255, 0.15), 0 0 8px rgba(99, 123, 255, 0.2);
+}
