@@ -31,7 +31,7 @@ const Leads = () => {
   const [sourceFilter, setSourceFilter] = useState('');
   const [assignedFilter, setAssignedFilter] = useState('');
   const [page, setPage] = useState(1);
-  const limit = 8;
+  const limit = 2000;
 
   // 2. LEAD MODAL DRAWER STATE
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -255,10 +255,10 @@ const Leads = () => {
         )}
 
         {!isLoading && !isError && data?.data?.length > 0 && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/60">
+              <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
                   <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Lead Prospect
                   </th>
@@ -395,32 +395,15 @@ const Leads = () => {
           </div>
         )}
 
-        {/* Paginated Footer */}
-        {!isLoading && !isError && data?.pagination?.totalPages > 1 && (
-          <div className="px-5 py-3.5 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 text-xs text-zinc-500 dark:text-zinc-400">
+        {/* Scrollable Status Footer */}
+        {!isLoading && !isError && data?.data && (
+          <div className="px-6 py-4 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
             <span>
-              Showing Page <strong>{data.pagination.page}</strong> of <strong>{data.pagination.totalPages}</strong>
+              Showing all matching leads. Scroll to browse the full list.
             </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className="py-1 px-3 text-xs"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(prev => Math.min(prev + 1, data.pagination.totalPages))}
-                disabled={page === data.pagination.totalPages}
-                className="py-1 px-3 text-xs"
-              >
-                Next
-              </Button>
-            </div>
+            <span>
+              Total: <strong className="font-semibold text-zinc-900 dark:text-white">{data.data.length} leads</strong>
+            </span>
           </div>
         )}
       </Card>
