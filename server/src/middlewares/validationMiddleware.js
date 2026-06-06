@@ -74,13 +74,14 @@ const schemas = {
     name: Joi.string().min(2).max(100).required(),
     email: Joi.string().email().required().lowercase(),
     password: Joi.string().min(6).required(),
-    role: Joi.string().valid('ADMIN', 'SALES_MANAGER', 'SALES_EXECUTIVE').required()
+    role: Joi.string().valid('SUPER_ADMIN', 'ADMIN', 'SALES_MANAGER', 'SALES_EXECUTIVE').required()
   }),
 
   userUpdate: Joi.object({
     name: Joi.string().min(2).max(100).optional(),
-    role: Joi.string().valid('ADMIN', 'SALES_MANAGER', 'SALES_EXECUTIVE').optional(),
-    status: Joi.string().valid('ACTIVE', 'DEACTIVATED').optional()
+    role: Joi.string().valid('SUPER_ADMIN', 'ADMIN', 'SALES_MANAGER', 'SALES_EXECUTIVE').optional(),
+    status: Joi.string().valid('ACTIVE', 'DEACTIVATED').optional(),
+    password: Joi.string().min(6).optional()
   }),
 
   leadCreate: Joi.object({
@@ -92,7 +93,10 @@ const schemas = {
     assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
     delegate: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
     followUpDate: Joi.date().allow(null, '').optional(),
-    initialNote: Joi.string().allow('').optional()
+    initialNote: Joi.string().allow('').optional(),
+    amount: Joi.number().min(0).allow(null, '').optional(),
+    paymentStatus: Joi.string().valid('PAID', 'PENDING').optional(),
+    paymentMethod: Joi.string().valid('STRIPE', 'UPI', 'BANK_TRANSFER', 'CASH', 'PENDING').optional()
   }),
 
   leadUpdate: Joi.object({
@@ -103,7 +107,10 @@ const schemas = {
     status: Joi.string().valid('NEW', 'CONTACTED', 'IN_PROGRESS', 'CONVERTED', 'LOST').optional(),
     assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
     delegate: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
-    followUpDate: Joi.date().allow(null, '').optional()
+    followUpDate: Joi.date().allow(null, '').optional(),
+    amount: Joi.number().min(0).allow(null, '').optional(),
+    paymentStatus: Joi.string().valid('PAID', 'PENDING').optional(),
+    paymentMethod: Joi.string().valid('STRIPE', 'UPI', 'BANK_TRANSFER', 'CASH', 'PENDING').optional()
   }),
 
   delegateCreate: Joi.object({

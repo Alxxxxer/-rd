@@ -36,7 +36,7 @@ class LeadService {
   }
 
   async createLead(user, leadData) {
-    const { name, email, phone, source, status, assignedTo, delegate, followUpDate, initialNote } = leadData;
+    const { name, email, phone, source, status, assignedTo, delegate, followUpDate, initialNote, amount, paymentStatus, paymentMethod } = leadData;
 
     // Build the initial notes array if provided
     const notes = [];
@@ -57,6 +57,9 @@ class LeadService {
       assignedTo: assignedTo || null,
       delegate: delegate || null,
       followUpDate: followUpDate || null,
+      amount: amount || 0,
+      paymentStatus: paymentStatus || 'PENDING',
+      paymentMethod: paymentMethod || 'PENDING',
       notes
     });
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,59 +6,34 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans selection:bg-brand-500 selection:text-white;
+    @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased font-sans transition-colors duration-150 selection:bg-brand-500 selection:text-white;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    @apply tracking-tight font-sans;
   }
 }
 
-/* Custom premium visual style utilities */
-.glassmorphism {
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glassmorphism-card {
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glassmorphism-card:hover {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: rgba(99, 123, 255, 0.25);
-  box-shadow: 0 10px 30px -10px rgba(99, 123, 255, 0.15);
-}
-
+/* Text highlight gradients matching brand accent */
 .text-gradient {
-  @apply bg-gradient-to-r from-brand-400 via-brand-500 to-indigo-400 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-brand-500 to-blue-600 dark:from-brand-400 dark:to-blue-400 bg-clip-text text-transparent;
 }
 
-/* Micro-animations */
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.03);
-  }
+/* Sleek minimalist scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.animate-glow {
-  animation: pulseGlow 4s infinite ease-in-out;
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
 }
 
-/* Custom Input glowing focus ring */
-.input-glow:focus {
-  outline: none;
-  border-color: rgba(99, 123, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(99, 123, 255, 0.15), 0 0 8px rgba(99, 123, 255, 0.2);
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-200 dark:bg-zinc-800 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-700;
+}
+
+/* Remove default focus outlines and provide custom keyboard rings */
+*:focus-visible {
+  @apply outline-none ring-2 ring-brand-500/20 dark:ring-brand-500/30 border-brand-500;
 }

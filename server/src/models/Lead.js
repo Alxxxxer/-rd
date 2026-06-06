@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { LEAD_STATUS } = require('../constants');
+const { LEAD_STATUS, REVENUE_STATUS, PAYMENT_METHODS } = require('../constants');
 
 const leadSchema = new mongoose.Schema(
   {
@@ -46,6 +46,22 @@ const leadSchema = new mongoose.Schema(
     followUpDate: {
       type: Date,
       default: null,
+      index: true
+    },
+    amount: {
+      type: Number,
+      default: 0
+    },
+    paymentStatus: {
+      type: String,
+      enum: Object.values(REVENUE_STATUS),
+      default: REVENUE_STATUS.PENDING,
+      index: true
+    },
+    paymentMethod: {
+      type: String,
+      enum: Object.values(PAYMENT_METHODS),
+      default: PAYMENT_METHODS.PENDING,
       index: true
     },
     notes: [

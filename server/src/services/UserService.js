@@ -112,11 +112,24 @@ class UserService {
 
     // 4. Perform Update
     const updatedFields = {};
-    if (updateData.name !== undefined) updatedFields.name = updateData.name;
-    if (updateData.role !== undefined) updatedFields.role = updateData.role;
-    if (updateData.status !== undefined) updatedFields.status = updateData.status;
+    if (updateData.name !== undefined) {
+      targetUser.name = updateData.name;
+      updatedFields.name = updateData.name;
+    }
+    if (updateData.role !== undefined) {
+      targetUser.role = updateData.role;
+      updatedFields.role = updateData.role;
+    }
+    if (updateData.status !== undefined) {
+      targetUser.status = updateData.status;
+      updatedFields.status = updateData.status;
+    }
+    if (updateData.password !== undefined && updateData.password !== '') {
+      targetUser.password = updateData.password;
+      updatedFields.password = '[CHANGED]';
+    }
 
-    const updatedUser = await UserRepository.update(targetUserId, updatedFields);
+    const updatedUser = await targetUser.save();
 
     // 5. Log change audit trail
     await ActivityLogRepository.create({

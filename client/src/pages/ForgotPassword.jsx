@@ -51,41 +51,40 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 relative overflow-hidden">
-      {/* Background radial atmosphere */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-brand-600/10 blur-[100px] animate-glow" />
-
-      <div className="w-full max-w-md z-10">
-        <div className="text-center mb-8 space-y-2">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 mb-2">
-            <Key size={36} />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12 transition-colors duration-150 relative">
+      <div className="w-full max-w-sm space-y-6">
+        
+        {/* Branding header */}
+        <div className="text-center flex flex-col items-center space-y-2">
+          <div className="inline-flex items-center justify-center p-2 rounded bg-brand-500/10 text-brand-500 mb-1">
+            <Key size={24} />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            Forgot <span className="text-gradient">Password?</span>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            Forgot Password
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Recover access to your SalesCRM account
           </p>
         </div>
 
-        <Card className="shadow-glass border-slate-800/80">
+        <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 md:p-8 shadow-sm">
           {!success ? (
             <>
-              <div className="mb-6 text-left">
-                <h2 className="text-xl font-bold text-slate-100">Reset Credentials</h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Enter your registered email address. We will generate a secure reset link.
+              <div className="mb-5 text-left space-y-1">
+                <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Reset Credentials</h2>
+                <p className="text-xs text-zinc-450 dark:text-zinc-400">
+                  Enter your registered email address below. We'll generate a secure password reset link.
                 </p>
               </div>
 
               {error && (
-                <div className="mb-6 p-4 rounded-lg bg-red-950/20 border border-red-900/30 text-red-400 text-sm flex items-start gap-2.5 animate-fade-in text-left">
-                  <ShieldAlert size={18} className="shrink-0 mt-0.5" />
+                <div className="mb-5 p-3.5 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 text-xs flex items-start gap-2 animate-fade-in text-left">
+                  <ShieldAlert size={14} className="shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
                   label="Email Address"
                   type="email"
@@ -101,7 +100,7 @@ const ForgotPassword = () => {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full py-3.5"
+                  className="w-full py-2.5 mt-2 font-semibold text-xs uppercase tracking-wider"
                   isLoading={isLoading}
                 >
                   Send Reset Link
@@ -109,53 +108,50 @@ const ForgotPassword = () => {
               </form>
             </>
           ) : (
-            <div className="text-center py-4 space-y-6">
-              <div className="inline-flex items-center justify-center p-4 rounded-full bg-green-950/20 border border-green-500/20 text-green-400 mb-2 animate-bounce">
-                <CheckCircle size={44} />
+            <div className="text-center py-2 space-y-5">
+              <div className="inline-flex items-center justify-center p-3 rounded-full bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-500/20 text-emerald-500 dark:text-emerald-400 mb-1">
+                <CheckCircle size={32} />
               </div>
               
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-slate-100">Check Email</h2>
-                <p className="text-sm text-slate-400 px-2 leading-relaxed">
-                  If your email matches an active account, a password reset token has been dispatched.
+                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Check Email</h2>
+                <p className="text-xs text-zinc-550 dark:text-zinc-400 leading-relaxed">
+                  If your email matches an active account, a password reset token has been processed and dispatched.
                 </p>
               </div>
 
               {devToken && (
-                <div className="p-4 rounded-lg bg-brand-950/20 border border-brand-500/20 text-left space-y-3">
+                <div className="p-3.5 rounded border border-brand-200/50 dark:border-brand-800/40 bg-brand-50/10 dark:bg-brand-950/20 text-left space-y-2.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-brand-400 uppercase tracking-wide">
-                      Local Seeding / Dev Token
+                    <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
+                      Dev Testing Helper
                     </span>
                     <button
                       onClick={handleCopyToken}
-                      className="text-xs font-medium text-brand-300 hover:text-white flex items-center gap-1 transition-colors"
+                      className="text-[10px] font-semibold text-brand-600 dark:text-brand-300 hover:text-brand-800 dark:hover:text-white flex items-center gap-1 transition-colors"
                     >
-                      <Copy size={13} />
+                      <Copy size={11} />
                       {copied ? 'Copied!' : 'Copy'}
                     </button>
                   </div>
-                  <code className="block break-all bg-slate-950/80 p-2.5 rounded border border-slate-800 text-xs text-slate-300 select-all font-mono">
+                  <code className="block break-all bg-zinc-100 dark:bg-zinc-950 p-2 rounded border border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-700 dark:text-zinc-300 select-all font-mono">
                     {devToken}
                   </code>
-                  <p className="text-[10px] text-slate-500 italic">
-                    Note: This token is only exposed in your current local development environment.
-                  </p>
                   <Link
                     to={`/reset-password?token=${devToken}`}
-                    className="block text-center text-xs font-bold bg-brand-600/40 hover:bg-brand-600/60 border border-brand-500/30 text-white py-2 rounded transition-all duration-300"
+                    className="block text-center text-xs font-semibold bg-brand-500 text-white hover:bg-brand-600 py-1.5 rounded transition-all"
                   >
                     Proceed to Reset Page Directly
                   </Link>
                 </div>
               )}
 
-              <div className="border-t border-slate-800 pt-6">
+              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors inline-flex items-center gap-2"
+                  className="text-xs font-semibold text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 transition-colors inline-flex items-center gap-1.5"
                 >
-                  <ArrowLeft size={16} />
+                  <ArrowLeft size={14} />
                   Return to Login
                 </Link>
               </div>
@@ -163,12 +159,12 @@ const ForgotPassword = () => {
           )}
 
           {!success && (
-            <div className="border-t border-slate-800 pt-6 mt-6">
+            <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 mt-4 text-center">
               <Link
                 to="/login"
-                className="text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors inline-flex items-center gap-2"
+                className="text-xs font-medium text-zinc-550 dark:text-zinc-450 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors inline-flex items-center gap-1.5"
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={14} />
                 Back to Login
               </Link>
             </div>

@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  UserPlus,
-  Edit2,
-  UserX,
-  UserCheck,
-  Filter,
-  ShieldCheck,
-  Activity,
-  AlertCircle
-} from 'lucide-react';
+import { Search, UserPlus, Edit2, UserX, UserCheck, Activity, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import Layout from '../components/common/Layout';
@@ -130,7 +120,7 @@ const Users = () => {
       name: user.name,
       email: user.email,
       role: user.role,
-      password: '' // Passwords are not edited here
+      password: '' // Initialize password input as blank
     });
     setModalTitle(`Edit Profile: ${user.name}`);
     setIsModalOpen(true);
@@ -143,12 +133,16 @@ const Users = () => {
 
     if (selectedUser) {
       // Execute Edit Mutation
+      const updatePayload = {
+        name: formData.name,
+        role: formData.role
+      };
+      if (formData.password) {
+        updatePayload.password = formData.password;
+      }
       updateUserMutation.mutate({
-        id: selectedUser.id,
-        updatePayload: {
-          name: formData.name,
-          role: formData.role
-        }
+        id: selectedUser.id || selectedUser._id,
+        updatePayload
       });
     } else {
       // Execute Create Mutation
@@ -165,32 +159,38 @@ const Users = () => {
     const nextStatus = userToToggle.status === 'ACTIVE' ? 'DEACTIVATED' : 'ACTIVE';
     
     updateUserMutation.mutate({
-      id: userToToggle.id,
+      id: userToToggle.id || userToToggle._id,
       updatePayload: { status: nextStatus }
     });
   };
 
   // Determine allowed roles for assigning depending on active Admin's access hierarchy
   const getAllowedRoles = () => {
+    const roles = [];
     if (currentUser?.role === 'SUPER_ADMIN') {
-      return ['ADMIN', 'SALES_MANAGER', 'SALES_EXECUTIVE'];
+      roles.push('SUPER_ADMIN', 'ADMIN', 'SALES_MANAGER', 'SALES_EXECUTIVE');
+    } else {
+      roles.push('SALES_MANAGER', 'SALES_EXECUTIVE');
     }
-    // standard ADMIN can only create MANAGER / EXECUTIVE
-    return ['SALES_MANAGER', 'SALES_EXECUTIVE'];
+    // Ensure the current user's role is always selectable to avoid demoting during editing
+    if (selectedUser?.role && !roles.includes(selectedUser.role)) {
+      roles.push(selectedUser.role);
+    }
+    return roles;
   };
 
   return (
     <Layout>
       {/* View Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="text-left space-y-1">
-          <span className="text-xs uppercase font-bold text-brand-400 tracking-wider">
+        <div className="text-left space-y-0.5">
+          <span className="text-xs uppercase font-bold text-brand-500 tracking-wider">
             Console Center
           </span>
-          <h1 className="text-3xl font-extrabold text-white">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white leading-tight">
             User Accounts
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Provision, manage roles, and control access permissions.
           </p>
         </div>
@@ -198,16 +198,16 @@ const Users = () => {
         <Button
           variant="primary"
           onClick={handleOpenCreateModal}
-          className="flex items-center gap-2 py-3 px-5 self-start md:self-auto"
+          className="flex items-center gap-1.5 py-2.5 px-4 self-start md:self-auto font-semibold text-sm uppercase tracking-wider"
         >
-          <UserPlus size={16} />
+          <UserPlus size={14} />
           Create Account
         </Button>
       </div>
 
       {/* Filter Options Bar */}
-      <Card className="p-4 border-slate-900 bg-slate-950/40">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             placeholder="Search accounts name or email..."
             icon={Search}
@@ -215,62 +215,56 @@ const Users = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          <div className="flex gap-4">
-            <div className="w-full space-y-1.5 text-left">
-              <select
-                value={roleFilter}
-                onChange={handleRoleFilterChange}
-                className="block w-full bg-slate-900 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
-              >
-                <option value="">All Roles</option>
-                <option value="SUPER_ADMIN">Super Admin</option>
-                <option value="ADMIN">Admin</option>
-                <option value="SALES_MANAGER">Sales Manager</option>
-                <option value="SALES_EXECUTIVE">Sales Executive</option>
-              </select>
-            </div>
+          <div className="text-left">
+            <select
+              value={roleFilter}
+              onChange={handleRoleFilterChange}
+              className="block w-full bg-white dark:bg-zinc-955 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+            >
+              <option value="">All Roles</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="ADMIN">Admin</option>
+              <option value="SALES_MANAGER">Sales Manager</option>
+              <option value="SALES_EXECUTIVE">Sales Executive</option>
+            </select>
+          </div>
 
-            <div className="w-full space-y-1.5 text-left">
-              <select
-                value={statusFilter}
-                onChange={handleStatusFilterChange}
-                className="block w-full bg-slate-900 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
-              >
-                <option value="">All Statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="DEACTIVATED">Deactivated</option>
-              </select>
-            </div>
+          <div className="text-left">
+            <select
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              className="block w-full bg-white dark:bg-zinc-955 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+            >
+              <option value="">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="DEACTIVATED">Deactivated</option>
+            </select>
           </div>
         </div>
       </Card>
 
       {/* Data Table Grid container */}
-      <Card className="p-0 border-slate-900 bg-slate-950/20 overflow-hidden relative min-h-[300px]">
+      <Card className="p-0 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 overflow-hidden relative min-h-[300px] shadow-sm">
         {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 z-20">
-            <svg
-              className="animate-spin h-8 w-8 text-brand-500 mb-2"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 dark:bg-zinc-950/60 z-20 transition-colors duration-150">
+            <svg className="animate-spin h-7 w-7 text-brand-500 mb-2" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <span className="text-xs text-slate-400">Fetching records...</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Fetching records...</span>
           </div>
         )}
 
         {isError && (
-          <div className="flex flex-col items-center justify-center p-12 text-slate-400 text-sm">
-            <AlertCircle size={36} className="text-red-500 mb-3" />
+          <div className="flex flex-col items-center justify-center p-12 text-zinc-550 dark:text-zinc-400 text-xs">
+            <AlertCircle size={32} className="text-red-500 mb-3" />
             <span>Failed to load accounts: {error?.message || 'Server error.'}</span>
           </div>
         )}
 
         {!isLoading && !isError && data?.data?.length === 0 && (
-          <div className="flex flex-col items-center justify-center p-16 text-slate-500 text-sm">
-            <Activity size={36} className="text-slate-700 mb-3" />
+          <div className="flex flex-col items-center justify-center p-16 text-zinc-550 dark:text-zinc-400 text-xs">
+            <Activity size={32} className="text-zinc-300 dark:text-zinc-700 mb-3" />
             <span>No user accounts found matching selected filters.</span>
           </div>
         )}
@@ -279,113 +273,107 @@ const Users = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-slate-900 bg-slate-950/60">
-                  <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/60">
+                  <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Account Profile
                   </th>
-                  <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Assigned Role
                   </th>
-                  <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Account Status
                   </th>
-                  <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Last Session
                   </th>
-                  <th className="px-6 py-4.5 text-xs font-semibold uppercase tracking-wider text-slate-400 text-right">
+                  <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-900/50">
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-850">
                 {data.data.map((user) => {
-                  const isSelf = currentUser?.id === user.id;
+                  const isSelf = (currentUser?.id || currentUser?._id) === (user.id || user._id);
 
                   // Render roles distinct styles
                   const roleStyles = {
-                    SUPER_ADMIN: 'text-red-400 bg-red-950/20 border-red-900/40',
-                    ADMIN: 'text-purple-400 bg-purple-950/20 border-purple-900/40',
-                    SALES_MANAGER: 'text-brand-400 bg-brand-950/20 border-brand-900/40',
-                    SALES_EXECUTIVE: 'text-slate-400 bg-slate-900/40 border-slate-800'
+                    SUPER_ADMIN: 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/20 dark:border-red-900/30',
+                    ADMIN: 'text-purple-600 bg-purple-50 border-purple-200 dark:text-purple-400 dark:bg-purple-950/20 dark:border-purple-900/30',
+                    SALES_MANAGER: 'text-brand-650 bg-brand-50 border-brand-200 dark:text-brand-400 dark:bg-brand-950/20 dark:border-brand-900/30',
+                    SALES_EXECUTIVE: 'text-zinc-650 bg-zinc-100 border-zinc-200 dark:text-zinc-400 dark:bg-zinc-850 dark:border-zinc-800'
                   };
 
                   return (
                     <tr
-                      key={user.id}
-                      className="hover:bg-slate-900/20 transition-colors duration-200"
+                      key={user.id || user._id}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-900/15 transition-colors duration-150"
                     >
-                      <td className="px-6 py-4.5">
-                        <div className="flex items-center gap-3">
-                          {/* Round initials avatar */}
-                          <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-sm font-bold text-slate-300">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3.5">
+                          {/* initials avatar */}
+                          <div className="w-10 h-10 rounded bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-650 dark:text-zinc-300">
                             {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="text-left space-y-0.5">
-                            <p className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 leading-tight">
                               {user.name}
                               {isSelf && (
-                                <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded text-slate-500">
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 border border-zinc-250 dark:border-zinc-700 px-1 py-0.2 rounded text-zinc-500">
                                   You
                                 </span>
                               )}
                             </p>
-                            <p className="text-xs text-slate-500">{user.email}</p>
+                            <p className="text-xs text-zinc-450 dark:text-zinc-500 mt-0.5">{user.email}</p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4.5">
-                        <span className={`inline-block text-[10px] font-bold border rounded px-2.5 py-1 uppercase tracking-wide ${roleStyles[user.role]}`}>
+                      <td className="px-5 py-4">
+                        <span className={`inline-block text-xs font-bold border rounded px-2.5 py-0.5 uppercase tracking-wider ${roleStyles[user.role]}`}>
                           {user.role.replace('_', ' ')}
                         </span>
                       </td>
 
-                      <td className="px-6 py-4.5">
-                        <div className="flex items-center gap-2 text-sm font-medium">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1.5 text-xs font-medium">
                           {user.status === 'ACTIVE' ? (
                             <>
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-emerald-400 text-xs">Active</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="text-emerald-600 dark:text-emerald-400 text-xs">Active</span>
                             </>
                           ) : (
                             <>
-                              <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                              <span className="text-red-400 text-xs">Deactivated</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                              <span className="text-red-650 dark:text-red-400 text-xs">Deactivated</span>
                             </>
                           )}
                         </div>
                       </td>
 
-                      <td className="px-6 py-4.5 text-xs text-slate-400">
+                      <td className="px-5 py-4 text-xs text-zinc-500 dark:text-zinc-450">
                         {user.lastLogin 
                           ? new Date(user.lastLogin).toLocaleString() 
                           : 'Never Active'}
                       </td>
 
-                      <td className="px-6 py-4.5 text-right">
+                      <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {/* Disable update controls on SUPER_ADMIN targets unless active operator is SUPER_ADMIN */}
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleOpenEditModal(user)}
-                            className="p-2 border-slate-800 hover:border-brand-500/40 text-slate-400 hover:text-white"
+                            className="p-1.5 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
                             disabled={user.role === 'SUPER_ADMIN' && currentUser?.role !== 'SUPER_ADMIN'}
                           >
                             <Edit2 size={13} />
                           </Button>
 
-                          {/* Block self deactivation */}
                           <Button
                             variant="danger"
                             size="sm"
                             onClick={() => handleToggleStatus(user)}
                             disabled={isSelf || (user.role === 'SUPER_ADMIN' && currentUser?.role !== 'SUPER_ADMIN')}
-                            className={`p-2 border-transparent ${
-                              user.status === 'ACTIVE' 
-                                ? 'bg-red-950/20 text-red-400 hover:bg-red-950/40' 
-                                : 'bg-green-950/20 text-green-400 hover:bg-green-950/40'
-                            }`}
+                            className="p-1.5"
                           >
                             {user.status === 'ACTIVE' ? <UserX size={13} /> : <UserCheck size={13} />}
                           </Button>
@@ -401,7 +389,7 @@ const Users = () => {
 
         {/* Dynamic Pagination Bar footer */}
         {!isLoading && !isError && data?.pagination?.totalPages > 1 && (
-          <div className="px-6 py-4.5 flex items-center justify-between border-t border-slate-900 bg-slate-950/40 text-xs text-slate-500">
+          <div className="px-5 py-3.5 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 text-xs text-zinc-500 dark:text-zinc-400">
             <span>
               Showing Page <strong>{data.pagination.page}</strong> of <strong>{data.pagination.totalPages}</strong>
             </span>
@@ -411,6 +399,7 @@ const Users = () => {
                 size="sm"
                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                 disabled={page === 1}
+                className="py-1 px-3 text-xs"
               >
                 Previous
               </Button>
@@ -419,6 +408,7 @@ const Users = () => {
                 size="sm"
                 onClick={() => setPage(prev => Math.min(prev + 1, data.pagination.totalPages))}
                 disabled={page === data.pagination.totalPages}
+                className="py-1 px-3 text-xs"
               >
                 Next
               </Button>
@@ -434,13 +424,13 @@ const Users = () => {
         title={modalTitle}
       >
         {formError && (
-          <div className="mb-4 p-4 rounded bg-red-950/20 border border-red-900/30 text-red-400 text-xs flex items-center gap-2 text-left">
-            <AlertCircle size={16} />
+          <div className="mb-4 p-3 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-650 dark:text-red-400 text-xs flex items-center gap-2 text-left">
+            <AlertCircle size={14} />
             <span>{formError}</span>
           </div>
         )}
 
-        <form onSubmit={handleFormSubmit} className="space-y-5">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <Input
             label="Account Display Name"
             type="text"
@@ -462,7 +452,16 @@ const Users = () => {
             required
           />
 
-          {!selectedUser && (
+          {selectedUser ? (
+            <Input
+              label="Reset Password (leave blank to keep current)"
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            />
+          ) : (
             <Input
               label="Temporary Password"
               type="password"
@@ -474,14 +473,15 @@ const Users = () => {
             />
           )}
 
-          <div className="space-y-1.5 text-left">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 font-sans">
+          <div className="space-y-1 text-left">
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-sans">
               System Access Role
             </label>
             <select
               value={formData.role}
+              disabled={selectedUser && ((selectedUser.id || selectedUser._id) === (currentUser?.id || currentUser?._id))}
               onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-              className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
+              className="block w-full bg-white dark:bg-zinc-955 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {getAllowedRoles().map((role) => (
                 <option key={role} value={role}>
@@ -491,16 +491,20 @@ const Users = () => {
             </select>
           </div>
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">
+          <div className="flex gap-2.5 justify-end pt-3.5 border-t border-zinc-100 dark:border-zinc-850">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setIsModalOpen(false)}
+              className="py-2.5 px-4 text-sm font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
+              size="sm"
+              className="py-2.5 px-4 text-sm font-semibold uppercase tracking-wider"
               isLoading={createUserMutation.isLoading || updateUserMutation.isLoading}
             >
               {selectedUser ? 'Save Updates' : 'Provision User'}

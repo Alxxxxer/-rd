@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,30 +8,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        // High-end Harmonious Dark Theme Color System (Tailored HSL values)
+        // SaaS professional color system
         brand: {
-          50: '#f5f7ff',
-          100: '#ebf0ff',
-          200: '#dae3ff',
-          300: '#bdcbff',
-          400: '#94a7ff',
-          500: '#637bff', // Custom Electric Brand Blue
-          600: '#3e52ff',
-          700: '#2c3be6',
-          800: '#242fb9',
-          900: '#232c93',
-          950: '#151756',
+          50: '#f0f4ff',
+          100: '#dbe5ff',
+          200: '#bfd0ff',
+          350: '#9cb3ff',
+          400: '#7590ff',
+          500: '#3b5cff', // Electric Indigo/Blue
+          600: '#2540e6',
+          700: '#1b2cb8',
+          800: '#192494',
+          900: '#1a2273',
+          950: '#0f1240',
         },
-        slate: {
-          950: '#0b0f19', // Pure Deep Premium Charcoal-Black
-        }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-        'glow': '0 0 15px rgba(99, 123, 255, 0.4)',
+        'sm-border': '0 0 0 1px rgba(0, 0, 0, 0.05)',
+        'dark-border': '0 0 0 1px rgba(255, 255, 255, 0.08)',
+        'subtle': '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.08)',
       }
     },
   },

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, User, Calendar, ShieldCheck, Plus, AlertCircle, FileText, Send, GraduationCap } from 'lucide-react';
+import { MessageSquare, User, Calendar, ShieldCheck, FileText, Send, GraduationCap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
-import Card from '../ui/Card';
 
 const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
   const { user: currentUser } = useAuth();
@@ -21,6 +20,9 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
   const [assignedTo, setAssignedTo] = useState('');
   const [delegate, setDelegate] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [paymentStatus, setPaymentStatus] = useState('PENDING');
+  const [paymentMethod, setPaymentMethod] = useState('PENDING');
   const [initialNote, setInitialNote] = useState('');
 
   // 2. ACTIVE COMMENTS STATE
@@ -37,6 +39,9 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
       setStatus(lead.status || 'NEW');
       setAssignedTo(lead.assignedTo?.id || lead.assignedTo?._id || '');
       setDelegate(lead.delegate?.id || lead.delegate?._id || lead.delegate || '');
+      setAmount(lead.amount || 0);
+      setPaymentStatus(lead.paymentStatus || 'PENDING');
+      setPaymentMethod(lead.paymentMethod || 'PENDING');
       
       // Standardize Date format to YYYY-MM-DD for date inputs
       if (lead.followUpDate) {
@@ -51,9 +56,12 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
       setPhone('');
       setSource('Manual');
       setStatus('NEW');
-      setAssignedTo(currentUser?.role === 'SALES_EXECUTIVE' ? currentUser.id : '');
+      setAssignedTo(currentUser?.role === 'SALES_EXECUTIVE' ? (currentUser.id || currentUser._id) : '');
       setDelegate('');
       setFollowUpDate('');
+      setAmount(0);
+      setPaymentStatus('PENDING');
+      setPaymentMethod('PENDING');
       setInitialNote('');
     }
     setFormError(null);
@@ -149,7 +157,10 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
       status,
       assignedTo: assignedTo || null,
       delegate: delegate || null,
-      followUpDate: followUpDate || null
+      followUpDate: followUpDate || null,
+      amount: amount ? Number(amount) : 0,
+      paymentStatus,
+      paymentMethod
     };
 
     if (lead) {
@@ -175,20 +186,19 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
       isOpen={isOpen}
       onClose={onClose}
       title={lead ? `Edit Prospect: ${name}` : 'Register New Lead'}
-      className="max-w-2xl md:p-6"
+      className="max-w-4xl md:p-8"
     >
       {formError && (
-        <div className="mb-4 p-4 rounded bg-red-950/20 border border-red-900/30 text-red-400 text-xs flex items-center gap-2 text-left animate-fade-in">
-          <AlertCircle size={16} />
+        <div className="mb-4 p-3.5 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-650 dark:text-red-400 text-xs flex items-center gap-2 text-left animate-fade-in">
           <span>{formError}</span>
         </div>
       )}
 
       {/* Forms & Notes Grid splitting */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
         
         {/* Left Hand: Core Forms inputs */}
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-3.5">
           <Input
             label="Prospect Name"
             type="text"
@@ -217,15 +227,15 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
             onChange={(e) => setPhone(e.target.value)}
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5 text-left">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="grid grid-cols-2 gap-3.5">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Lead Source
               </label>
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
+                className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
               >
                 <option value="Manual">Manual</option>
                 <option value="CSV Import">CSV Import</option>
@@ -233,14 +243,14 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
               </select>
             </div>
 
-            <div className="space-y-1.5 text-left">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Pipeline Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
+                className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
               >
                 <option value="NEW">New</option>
                 <option value="CONTACTED">Contacted</option>
@@ -251,36 +261,92 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          {/* Payment Details Section */}
+          <div className="p-3.5 bg-zinc-50/50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-md space-y-3">
+            <p className="text-xs text-zinc-450 dark:text-zinc-550 font-bold uppercase tracking-wider">Payment & Revenue Details</p>
+            <div className="grid grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                  Deal Amount ($)
+                </label>
+                <input
+                  type="number"
+                  id="amount"
+                  placeholder="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min="0"
+                  className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  Payment Status
+                </label>
+                <select
+                  value={paymentStatus}
+                  onChange={(e) => setPaymentStatus(e.target.value)}
+                  className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="PAID">Paid</option>
+                </select>
+              </div>
+            </div>
+            
+            {paymentStatus === 'PAID' && (
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  Payment Method
+                </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="STRIPE">Stripe</option>
+                  <option value="UPI">UPI</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CASH">Cash</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-3.5">
             {/* Assignment Dropdown visible to Admins/Managers only */}
             {canManageAssignment ? (
               <>
-                <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Assign Executive
                   </label>
                   <select
                     value={assignedTo}
                     onChange={(e) => setAssignedTo(e.target.value)}
-                    className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
+                    className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                   >
                     <option value="">Unassigned</option>
-                    {executivesData?.data?.map((exec) => (
-                      <option key={exec.id} value={exec.id}>
-                        {exec.name}
-                      </option>
-                    ))}
+                    {executivesData?.data?.map((exec) => {
+                      const execId = exec.id || exec._id;
+                      return (
+                        <option key={execId} value={execId}>
+                          {exec.name}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
-                <div className="space-y-1.5 text-left">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Assign Campus Delegate
                   </label>
                   <select
                     value={delegate}
                     onChange={(e) => setDelegate(e.target.value)}
-                    className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
+                    className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-2.5 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                   >
                     <option value="">No Delegate Linked</option>
                     {delegatesData?.data?.map((del) => (
@@ -294,27 +360,27 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
             ) : (
               // Locked indicators for standard Sales Executives
               <>
-                <div className="p-3.5 bg-slate-950 border border-slate-900 rounded-lg">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Assigned Owner</p>
-                  <p className="text-xs text-slate-300 font-medium mt-1 flex items-center gap-1.5">
-                    <User size={13} className="text-brand-400" />
+                <div className="p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-md">
+                  <p className="text-xs text-zinc-450 dark:text-zinc-500 font-bold uppercase tracking-wider">Assigned Owner</p>
+                  <p className="text-sm text-zinc-850 dark:text-zinc-200 font-medium mt-1 flex items-center gap-1.5">
+                    <User size={13} className="text-brand-500" />
                     {lead?.assignedTo?.name || currentUser?.name} (Assigned to You)
                   </p>
                 </div>
 
-                <div className="p-3.5 bg-slate-950 border border-slate-900 rounded-lg">
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Campus Delegate</p>
-                  <p className="text-xs text-slate-300 font-medium mt-1 flex items-center gap-1.5">
-                    <GraduationCap size={13} className="text-brand-400" />
+                <div className="p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-md">
+                  <p className="text-xs text-zinc-450 dark:text-zinc-500 font-bold uppercase tracking-wider">Campus Delegate</p>
+                  <p className="text-sm text-zinc-850 dark:text-zinc-200 font-medium mt-1 flex items-center gap-1.5">
+                    <GraduationCap size={13} className="text-brand-500" />
                     {lead?.delegate?.campus ? `${lead.delegate.campus} (${lead.delegate.code})` : 'None Linked'}
                   </p>
                 </div>
               </>
             )}
 
-            <div className="space-y-1.5 text-left">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <Calendar size={12} className="text-brand-400" />
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                <Calendar size={14} className="text-brand-500" />
                 Follow-Up Schedule
               </label>
               <input
@@ -322,15 +388,14 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
                 id="followUpDate"
                 value={followUpDate}
                 onChange={(e) => setFollowUpDate(e.target.value)}
-                className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none input-glow"
+                className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-750 dark:text-zinc-300 py-2.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all font-sans"
               />
             </div>
           </div>
 
           {!lead && (
-            <div className="space-y-1.5 text-left">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <MessageSquare size={12} className="text-brand-400" />
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Initial Contact Note
               </label>
               <textarea
@@ -338,66 +403,67 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
                 value={initialNote}
                 onChange={(e) => setInitialNote(e.target.value)}
                 rows={3}
-                className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-2.5 px-4 focus:outline-none input-glow resize-none font-sans"
+                className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-750 dark:text-zinc-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all resize-none font-sans"
               />
             </div>
           )}
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex gap-2.5 justify-end pt-3.5 border-t border-zinc-100 dark:border-zinc-850">
+            <Button variant="outline" size="sm" onClick={onClose} className="py-2.5 px-4 text-sm font-semibold">
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
+              size="sm"
+              className="py-2.5 px-4 text-sm font-semibold uppercase tracking-wider"
               isLoading={createMutation.isLoading || updateMutation.isLoading}
             >
-              {lead ? 'Save Changes' : 'Register Prospect'}
+              {lead ? 'Save Changes' : 'Register Lead'}
             </Button>
           </div>
         </form>
 
-        {/* Right Hand: Notes Chronological Timeline */}
-        <div className="flex flex-col h-full min-h-[300px] border-t md:border-t-0 md:border-l border-slate-800 pt-6 md:pt-0 md:pl-6">
-          <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-            <MessageSquare size={14} className="text-indigo-400" />
+        {/* Right Hand: Notes Timeline */}
+        <div className="flex flex-col h-full min-h-[300px] border-t md:border-t-0 md:border-l border-zinc-150 dark:border-zinc-850 pt-5 md:pt-0 md:pl-5">
+          <span className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2.5 flex items-center gap-1">
+            <MessageSquare size={13} className="text-brand-500" />
             Notes & History Logs
           </span>
 
           {!lead ? (
-            // Form creation notice helper
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-600 bg-slate-950/20 border border-dashed border-slate-900 rounded-lg">
-              <FileText size={28} className="mb-2" />
-              <p className="text-xs">
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-5 text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-950 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md">
+              <FileText size={24} className="mb-1.5 text-zinc-300 dark:text-zinc-700" />
+              <p className="text-[10px] leading-relaxed">
                 History logs are initialized once the prospect is registered. Use "Initial Contact Note" to append first files.
               </p>
             </div>
           ) : (
             <>
-              {/* Chronological descending notes timelines scroll block */}
-              <div className="flex-1 overflow-y-auto max-h-[350px] space-y-3.5 pr-1.5 mb-4">
+              {/* Chronological notes block */}
+              <div className="flex-1 overflow-y-auto max-h-[300px] space-y-2.5 pr-1 mb-3">
                 {(leadDetails?.data?.notes || lead.notes || []).length === 0 ? (
-                  <div className="text-center p-6 text-xs text-slate-600 border border-dashed border-slate-900 rounded-lg">
+                  <div className="text-center p-5 text-[10px] text-zinc-400 dark:text-zinc-500 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-md">
                     No notes logged on this pipeline.
                   </div>
                 ) : (
                   [...(leadDetails?.data?.notes || lead.notes || [])]
-                    .reverse() // Display descending chronological order
+                    .reverse()
                     .map((note, index) => {
                       return (
                         <div
                           key={note._id || index}
-                          className="p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs space-y-2 relative"
+                          className="p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 text-xs space-y-1.5"
                         >
-                          <p className="text-slate-300 font-sans leading-normal whitespace-pre-line text-left">
+                          <p className="text-zinc-850 dark:text-zinc-300 font-sans leading-normal whitespace-pre-line text-left">
                             {note.text}
                           </p>
-                          <div className="flex items-center gap-1.5 text-[9px] text-slate-500 font-bold uppercase">
-                            <span className="text-brand-400">
+                          <div className="flex items-center gap-1.5 text-[9px] text-zinc-450 dark:text-zinc-500 font-bold uppercase">
+                            <span className="text-brand-600 dark:text-brand-400">
                               {note.createdBy?.name || 'User'}
                             </span>
                             <span>•</span>
-                            <span className="text-slate-600 font-sans tracking-wide">
+                            <span className="font-sans font-medium">
                               {new Date(note.createdAt).toLocaleDateString()} {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
@@ -415,15 +481,15 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
                     value={newNoteText}
                     onChange={(e) => setNewNoteText(e.target.value)}
                     rows={2}
-                    className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-xs text-slate-300 py-2.5 pl-3 pr-10 focus:outline-none input-glow resize-none font-sans"
+                    className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-xs text-zinc-800 dark:text-zinc-300 py-2 pl-3 pr-9 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all resize-none font-sans"
                     disabled={addNoteMutation.isLoading}
                   />
                   <button
                     type="submit"
-                    className="absolute right-2.5 bottom-2.5 p-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg transition-colors focus:outline-none"
+                    className="absolute right-2 bottom-2 p-1 bg-brand-500 hover:bg-brand-600 text-white rounded transition-colors disabled:opacity-50"
                     disabled={addNoteMutation.isLoading || !newNoteText.trim()}
                   >
-                    <Send size={12} />
+                    <Send size={11} />
                   </button>
                 </div>
               </form>

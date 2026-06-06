@@ -9,9 +9,7 @@ import {
   Building,
   Target,
   Trophy,
-  Users as UsersIcon,
   TrendingUp,
-  Percent,
   CheckCircle,
   Award
 } from 'lucide-react';
@@ -71,6 +69,16 @@ const Delegates = () => {
     queryKey: ['all-users-list'],
     queryFn: async () => {
       const response = await api.get('/users', { params: { limit: 100 } });
+      return response.data;
+    },
+    enabled: ['SUPER_ADMIN', 'ADMIN', 'SALES_MANAGER'].includes(currentUser?.role)
+  });
+
+  // Query all delegates to check for already linked user accounts across all pages
+  const { data: allDelegatesData } = useQuery({
+    queryKey: ['delegates', 'all-list'],
+    queryFn: async () => {
+      const response = await api.get('/delegates', { params: { limit: 1000 } });
       return response.data;
     },
     enabled: ['SUPER_ADMIN', 'ADMIN', 'SALES_MANAGER'].includes(currentUser?.role)
@@ -165,12 +173,20 @@ const Delegates = () => {
 
   // Filter out users who already have delegate profiles to avoid duplicate linking
   const availableUsers = usersData?.data?.filter(u => {
+    const uId = u.id || u._id;
+    if (!uId) return false;
+
     // If editing, the selected user is allowed
-    if (selectedDelegate && (u.id === selectedDelegate.user?.id || u.id === selectedDelegate.user?._id)) {
+    const selectedUserId = selectedDelegate?.user?.id || selectedDelegate?.user?._id;
+    if (selectedDelegate && selectedUserId && uId === selectedUserId) {
       return true;
     }
-    // Only show active sales executives/managers that aren't already linked
-    const alreadyLinked = delegatesList.some(d => d.user?.id === u.id || d.user?._id === u.id);
+    // Only show active sales executives/managers that aren't already linked (checking across all pages)
+    const fullDelegatesList = allDelegatesData?.data || [];
+    const alreadyLinked = fullDelegatesList.some(d => {
+      const dUserId = d.user?.id || d.user?._id;
+      return dUserId && uId && dUserId === uId;
+    });
     return !alreadyLinked && u.status === 'ACTIVE';
   }) || [];
 
@@ -178,14 +194,14 @@ const Delegates = () => {
     <Layout>
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="text-left space-y-1">
-          <span className="text-xs uppercase font-bold text-brand-400 tracking-wider">
+        <div className="text-left space-y-0.5">
+          <span className="text-xs uppercase font-bold text-brand-500 tracking-wider">
             Campus Network
           </span>
-          <h1 className="text-3xl font-extrabold text-white">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white leading-tight">
             Campus Delegates
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Provision delegate profiles, view assigned leads distribution, and track conversion rates.
           </p>
         </div>
@@ -194,92 +210,88 @@ const Delegates = () => {
           <Button
             variant="primary"
             onClick={handleOpenCreateModal}
-            className="flex items-center gap-2 py-3 px-5 self-start md:self-auto"
+            className="flex items-center gap-1.5 py-2.5 px-4 self-start md:self-auto font-semibold text-sm uppercase tracking-wider"
           >
-            <Plus size={16} />
+            <Plus size={14} />
             Register Delegate
           </Button>
         )}
       </div>
 
-      {/* Atmospheric High-Fidelity Stats Overview grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-        <Card className="relative overflow-hidden p-6 border-slate-900 bg-slate-950/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/5 blur-2xl rounded-full" />
+      {/* Stats Overview Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+        <Card className="p-5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wider">
+              <h3 className="text-zinc-450 dark:text-zinc-550 text-xs font-bold uppercase tracking-wider">
                 Total Delegates
               </h3>
-              <p className="text-3xl font-bold text-slate-100">{totalDelegates}</p>
+              <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{totalDelegates}</p>
             </div>
-            <div className="p-2.5 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl">
-              <GraduationCap size={20} />
+            <div className="p-2 bg-brand-500/10 text-brand-500 rounded">
+              <GraduationCap size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 mt-4">Linked campus network accounts</p>
+          <p className="text-xs text-zinc-450 dark:text-zinc-550 mt-3.5 font-medium">Linked campus network accounts</p>
         </Card>
 
-        <Card className="relative overflow-hidden p-6 border-slate-900 bg-slate-950/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-2xl rounded-full" />
+        <Card className="p-5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wider">
+              <h3 className="text-zinc-450 dark:text-zinc-550 text-xs font-bold uppercase tracking-wider">
                 Assigned Leads
               </h3>
-              <p className="text-3xl font-bold text-slate-100">{totalAssigned}</p>
+              <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{totalAssigned}</p>
             </div>
-            <div className="p-2.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-xl">
-              <Target size={20} />
+            <div className="p-2 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded">
+              <Target size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 mt-4">Pipeline leads assigned to delegates</p>
+          <p className="text-xs text-zinc-450 dark:text-zinc-550 mt-3.5 font-medium">Pipeline leads assigned to delegates</p>
         </Card>
 
-        <Card className="relative overflow-hidden p-6 border-slate-900 bg-slate-950/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full" />
+        <Card className="p-5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wider">
+              <h3 className="text-zinc-450 dark:text-zinc-550 text-xs font-bold uppercase tracking-wider">
                 Converted Leads
               </h3>
-              <p className="text-3xl font-bold text-slate-100">{totalConverted}</p>
+              <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{totalConverted}</p>
             </div>
-            <div className="p-2.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
-              <CheckCircle size={20} />
+            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded">
+              <CheckCircle size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 mt-4">Successful sales conversions</p>
+          <p className="text-xs text-zinc-450 dark:text-zinc-550 mt-3.5 font-medium">Successful sales conversions</p>
         </Card>
 
-        <Card className="relative overflow-hidden p-6 border-slate-900 bg-slate-950/30">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl rounded-full" />
+        <Card className="p-5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wider">
+              <h3 className="text-zinc-450 dark:text-zinc-550 text-xs font-bold uppercase tracking-wider">
                 Avg. Conversion
               </h3>
-              <p className="text-3xl font-bold text-slate-100">{overallConvRate}%</p>
+              <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{overallConvRate}%</p>
             </div>
-            <div className="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl">
-              <TrendingUp size={20} />
+            <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded">
+              <TrendingUp size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 mt-4">Calculated from total leads</p>
+          <p className="text-xs text-zinc-450 dark:text-zinc-550 mt-3.5 font-medium">Calculated from total leads</p>
         </Card>
       </div>
 
       {/* Filter Options Bar */}
-      <Card className="p-4 border-slate-900 bg-slate-950/40">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card className="p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             placeholder="Search campus name or unique code..."
             icon={Search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <div className="hidden md:flex justify-end items-center text-xs text-slate-500 gap-1.5 font-sans">
-            <Award size={14} className="text-amber-400" />
+          <div className="hidden sm:flex justify-end items-center text-xs text-zinc-400 dark:text-zinc-500 gap-1.5 font-sans">
+            <Award size={13} className="text-amber-500" />
             <span>Leaderboards can be viewed in the sidebar menu.</span>
           </div>
         </div>
@@ -288,32 +300,32 @@ const Delegates = () => {
       {/* Grid of Delegate Cards */}
       <div className="relative min-h-[300px]">
         {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 z-20">
-            <svg className="animate-spin h-8 w-8 text-brand-500 mb-2" fill="none" viewBox="0 0 24 24">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 dark:bg-zinc-950/60 z-20 transition-colors duration-150">
+            <svg className="animate-spin h-7 w-7 text-brand-500 mb-2" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <span className="text-xs text-slate-400">Loading campus delegates network...</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Loading campus delegates network...</span>
           </div>
         )}
 
         {isError && (
-          <div className="flex flex-col items-center justify-center p-12 text-slate-400 text-sm bg-slate-950/20 border border-slate-900 rounded-2xl">
-            <AlertCircle size={36} className="text-red-500 mb-3" />
+          <div className="flex flex-col items-center justify-center p-12 text-zinc-500 dark:text-zinc-400 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-sm">
+            <AlertCircle size={32} className="text-red-500 mb-2" />
             <span>Failed to load delegates: {error?.message || 'Server connection error.'}</span>
           </div>
         )}
 
         {!isLoading && !isError && delegatesList.length === 0 && (
-          <div className="flex flex-col items-center justify-center p-16 text-slate-500 text-sm bg-slate-950/20 border border-slate-900 rounded-2xl">
-            <GraduationCap size={36} className="text-slate-800 mb-3" />
+          <div className="flex flex-col items-center justify-center p-16 text-zinc-500 dark:text-zinc-400 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-sm">
+            <GraduationCap size={32} className="text-zinc-300 dark:text-zinc-700 mb-2" />
             <span>No campus delegate profiles registered yet.</span>
           </div>
         )}
 
         {!isLoading && !isError && delegatesList.length > 0 && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
               {delegatesList.map((delegate) => {
                 const assigned = delegate.assignedLeadsCount || 0;
                 const converted = delegate.convertedLeadsCount || 0;
@@ -322,22 +334,20 @@ const Delegates = () => {
                 return (
                   <Card
                     key={delegate._id || delegate.id}
-                    className="p-5 border-slate-900 hover:border-brand-500/30 bg-slate-950/30 relative flex flex-col justify-between group transition-all duration-300 overflow-hidden"
+                    className="p-5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 relative flex flex-col justify-between group transition-all duration-150 shadow-sm"
                   >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/5 blur-2xl rounded-full group-hover:bg-brand-500/10 transition-all" />
-                    
                     <div>
-                      {/* Top Row: Initials avatar, and dynamic role */}
+                      {/* Top Row: Initials avatar, and update */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-xs font-bold text-slate-300">
+                          <div className="w-10 h-10 rounded bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-650 dark:text-zinc-300">
                             {delegate.user?.name ? delegate.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CD'}
                           </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-slate-200 line-clamp-1">
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-200 truncate leading-none">
                               {delegate.user?.name || 'Unknown User'}
                             </h4>
-                            <p className="text-[10px] text-slate-500">{delegate.user?.email || 'No email associated'}</p>
+                            <p className="text-xs text-zinc-450 dark:text-zinc-500 mt-0.5 truncate">{delegate.user?.email || 'No email associated'}</p>
                           </div>
                         </div>
 
@@ -346,24 +356,24 @@ const Delegates = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenEditModal(delegate)}
-                            className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-900 border border-transparent rounded"
+                            className="p-1 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 bg-transparent rounded"
                           >
-                            <Edit2 size={12} />
+                            <Edit2 size={13} />
                           </Button>
                         )}
                       </div>
 
                       {/* Campus name / Code container */}
-                      <div className="p-3.5 bg-slate-900/40 border border-slate-900/60 rounded-xl space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-xs">
-                          <Building size={14} className="text-slate-500" />
-                          <span className="text-slate-400 font-semibold truncate flex-1">
+                      <div className="p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-md space-y-2 mb-4">
+                        <div className="flex items-center gap-1.5 text-sm">
+                          <Building size={14} className="text-zinc-400" />
+                          <span className="text-zinc-700 dark:text-zinc-300 font-semibold truncate flex-1 leading-none">
                             {delegate.campus}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-[10px] font-bold">
-                          <span className="text-slate-500 uppercase tracking-wide">Campus Code</span>
-                          <span className="px-2 py-0.5 rounded bg-brand-950/80 border border-brand-500/20 text-brand-400 font-mono tracking-wider">
+                        <div className="flex items-center justify-between text-xs font-bold uppercase">
+                          <span className="text-zinc-450 dark:text-zinc-500">Campus Code</span>
+                          <span className="px-2 py-0.5 rounded bg-brand-500/10 text-brand-600 dark:text-brand-400 font-mono tracking-wider">
                             {delegate.code}
                           </span>
                         </div>
@@ -371,33 +381,27 @@ const Delegates = () => {
                     </div>
 
                     {/* Conversion Stats Indicators */}
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       <div className="grid grid-cols-2 gap-2 text-center">
-                        <div className="p-2 rounded bg-slate-900/20 border border-slate-900/40">
-                          <p className="text-[9px] text-slate-500 uppercase tracking-wide font-bold">Assigned</p>
-                          <p className="text-sm font-bold text-slate-300">{assigned}</p>
+                        <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850">
+                          <p className="text-xs text-zinc-450 dark:text-zinc-500 uppercase tracking-wide font-bold">Assigned</p>
+                          <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">{assigned}</p>
                         </div>
-                        <div className="p-2 rounded bg-slate-900/20 border border-slate-900/40">
-                          <p className="text-[9px] text-slate-500 uppercase tracking-wide font-bold">Converted</p>
-                          <p className="text-sm font-bold text-emerald-400">{converted}</p>
+                        <div className="p-2 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850">
+                          <p className="text-xs text-zinc-450 dark:text-zinc-500 uppercase tracking-wide font-bold">Converted</p>
+                          <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{converted}</p>
                         </div>
                       </div>
 
-                      {/* Dynamic computed conversion progress bar */}
+                      {/* Conversion progress bar */}
                       <div className="space-y-1.5 text-left">
-                        <div className="flex items-center justify-between text-[10px] font-bold">
-                          <span className="text-slate-500 uppercase tracking-wide">Conversion Rate</span>
-                          <span className="text-slate-300">{conversionRate}%</span>
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="text-zinc-450 dark:text-zinc-500 uppercase tracking-wide">Conversion Rate</span>
+                          <span className="text-zinc-700 dark:text-zinc-300">{conversionRate}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-zinc-100 dark:bg-zinc-855 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
-                              Number(conversionRate) >= 60 
-                                ? 'from-emerald-500 to-green-400' 
-                                : Number(conversionRate) >= 30 
-                                ? 'from-amber-500 to-amber-400' 
-                                : 'from-indigo-500 to-brand-500'
-                            }`}
+                            className="h-full rounded-full transition-all duration-300 bg-brand-500"
                             style={{ width: `${Math.min(Number(conversionRate), 100)}%` }}
                           />
                         </div>
@@ -410,7 +414,7 @@ const Delegates = () => {
 
             {/* Pagination Controls */}
             {data?.pagination?.totalPages > 1 && (
-              <div className="px-6 py-4.5 flex items-center justify-between border border-slate-900 rounded-xl bg-slate-950/40 text-xs text-slate-500">
+              <div className="px-5 py-3.5 flex items-center justify-between border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50/50 dark:bg-zinc-900/30 text-xs text-zinc-500 dark:text-zinc-400 shadow-sm">
                 <span>
                   Showing Page <strong>{data.pagination.page}</strong> of <strong>{data.pagination.totalPages}</strong>
                 </span>
@@ -420,6 +424,7 @@ const Delegates = () => {
                     size="sm"
                     onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                     disabled={page === 1}
+                    className="py-1 px-3 text-xs"
                   >
                     Previous
                   </Button>
@@ -428,6 +433,7 @@ const Delegates = () => {
                     size="sm"
                     onClick={() => setPage(prev => Math.min(prev + 1, data.pagination.totalPages))}
                     disabled={page === data.pagination.totalPages}
+                    className="py-1 px-3 text-xs"
                   >
                     Next
                   </Button>
@@ -445,39 +451,42 @@ const Delegates = () => {
         title={modalTitle}
       >
         {formError && (
-          <div className="mb-4 p-4 rounded bg-red-950/20 border border-red-900/30 text-red-400 text-xs flex items-center gap-2 text-left">
-            <AlertCircle size={16} />
+          <div className="mb-4 p-3 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-650 dark:text-red-400 text-xs flex items-center gap-2 text-left">
+            <AlertCircle size={14} />
             <span>{formError}</span>
           </div>
         )}
 
-        <form onSubmit={handleFormSubmit} className="space-y-5">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           {!selectedDelegate ? (
-            <div className="space-y-1.5 text-left">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <div className="space-y-1 text-left">
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                 Select User Account Reference
               </label>
               <select
                 value={formData.userId}
                 onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
-                className="block w-full bg-slate-950 border border-slate-800 focus:border-brand-500/50 rounded-lg text-sm text-slate-300 py-3 px-4 focus:outline-none"
+                className="block w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-brand-500 rounded-md text-sm text-zinc-700 dark:text-zinc-300 py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
                 required
               >
                 <option value="">Choose active staff...</option>
-                {availableUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name} ({user.role?.replace('_', ' ')}) — {user.email}
-                  </option>
-                ))}
+                {availableUsers.map((user) => {
+                  const uId = user.id || user._id;
+                  return (
+                    <option key={uId} value={uId}>
+                      {user.name} ({user.role?.replace('_', ' ')}) — {user.email}
+                    </option>
+                  );
+                })}
               </select>
-              <p className="text-[10px] text-slate-500 font-sans">
+              <p className="text-xs text-zinc-400 dark:text-zinc-550 font-sans">
                 Only active staff accounts not currently mapped to a campus delegate can be selected.
               </p>
             </div>
           ) : (
-            <div className="p-3.5 bg-slate-950 border border-slate-900 rounded-lg text-left">
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Linked Staff Owner</p>
-              <p className="text-xs text-slate-300 font-medium mt-1">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-md text-left">
+              <p className="text-xs text-zinc-400 dark:text-zinc-550 font-bold uppercase tracking-wider">Linked Staff Owner</p>
+              <p className="text-sm text-zinc-800 dark:text-zinc-200 font-medium mt-1">
                 {selectedDelegate.user?.name} ({selectedDelegate.user?.email})
               </p>
             </div>
@@ -503,16 +512,20 @@ const Delegates = () => {
             required
           />
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">
+          <div className="flex gap-2.5 justify-end pt-3.5 border-t border-zinc-100 dark:border-zinc-850">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setIsModalOpen(false)}
+              className="py-2 px-3.5 text-sm font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
+              size="sm"
+              className="py-2 px-3.5 text-sm font-semibold uppercase tracking-wider"
               isLoading={createDelegateMutation.isLoading || updateDelegateMutation.isLoading}
             >
               {selectedDelegate ? 'Save Updates' : 'Provision Delegate'}

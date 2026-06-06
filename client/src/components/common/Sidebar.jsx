@@ -8,7 +8,6 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Menu,
   Target,
   GraduationCap,
   Trophy
@@ -73,48 +72,45 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   return (
     <aside
       className={`
-        h-screen sticky top-0 bg-slate-950/70 border-r border-slate-900 flex flex-col justify-between transition-all duration-300 z-30
-        ${isCollapsed ? 'w-20' : 'w-64'}
+        h-screen sticky top-0 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-900 flex flex-col justify-between transition-all duration-200 z-30
+        ${isCollapsed ? 'w-20' : 'w-72'}
       `}
     >
-      {/* Dynamic atmospheric side background glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-brand-600/5 via-transparent to-transparent pointer-events-none" />
-
-      <div className="z-10">
+      <div className="z-10 flex flex-col h-full">
         {/* Branding header */}
-        <div className={`flex items-center border-b border-slate-900 ${isCollapsed ? 'py-5 px-2 justify-center' : 'p-6 justify-between'}`}>
+        <div className={`flex items-center border-b border-zinc-200 dark:border-zinc-900 ${isCollapsed ? 'py-4 px-2 justify-center' : 'p-5 justify-between'}`}>
           {isCollapsed ? (
             <button
               onClick={() => setIsCollapsed(false)}
-              className="p-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/20 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex items-center justify-center"
+              className="p-1.5 rounded bg-brand-500/10 text-brand-500 hover:bg-brand-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
               title="Expand Sidebar"
             >
-              <ShieldCheck size={20} />
+              <ShieldCheck size={18} />
             </button>
           ) : (
             <>
               <Link to="/" className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400">
-                  <ShieldCheck size={20} />
+                <div className="p-1.5 rounded bg-brand-500/10 text-brand-500">
+                  <ShieldCheck size={18} />
                 </div>
-                <span className="font-extrabold text-sm tracking-tight text-white">
-                  Sales<span className="text-gradient">CRM</span>
+                <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white">
+                  Sales<span className="text-brand-500">CRM</span>
                 </span>
               </Link>
 
               <button
                 onClick={() => setIsCollapsed(true)}
-                className="hidden md:flex p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition-colors"
+                className="hidden md:flex p-1 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                 title="Collapse Sidebar"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} />
               </button>
             </>
           )}
         </div>
 
         {/* Navigation list */}
-        <nav className={`space-y-1.5 flex-1 ${isCollapsed ? 'py-4 px-2' : 'p-4'}`}>
+        <nav className={`space-y-1 flex-1 py-4 ${isCollapsed ? 'px-1.5' : 'px-3'}`}>
           {filteredNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -124,25 +120,20 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 key={item.name}
                 to={item.path}
                 className={`
-                  flex items-center rounded-lg text-sm font-medium transition-all duration-300 relative group
-                  ${isCollapsed ? 'justify-center p-3' : 'gap-3.5 px-4 py-3'}
+                  flex items-center rounded text-xs font-medium transition-all duration-150 relative group
+                  ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'}
                   ${isActive 
-                    ? 'bg-brand-600/25 border border-brand-500/30 text-white font-semibold' 
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/50 border border-transparent'}
+                    ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white font-semibold border-l-2 border-brand-500 pl-2.5 dark:pl-2.5' 
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 border-l-2 border-transparent'}
                 `}
               >
-                {/* Active left indicator strip */}
-                {isActive && (
-                  <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-brand-500 rounded-r" />
-                )}
-                
-                <Icon size={18} className={isActive ? 'text-brand-400' : 'text-slate-500 group-hover:text-slate-300'} />
+                <Icon size={16} className={isActive ? 'text-brand-500' : 'text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'} />
                 
                 {!isCollapsed && <span>{item.name}</span>}
 
                 {/* Collapsed Tooltip */}
                 {isCollapsed && (
-                  <div className="absolute left-16 px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-glass z-50">
+                  <div className="absolute left-14 px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-semibold text-zinc-200 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-150 whitespace-nowrap shadow-md z-50">
                     {item.name}
                   </div>
                 )}
@@ -153,13 +144,13 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       </div>
 
       {/* User profile bottom footer */}
-      <div className={`border-t border-slate-900 bg-slate-950/40 z-10 ${isCollapsed ? 'py-4 px-2' : 'p-4'}`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center gap-0' : 'gap-3 justify-between'}`}>
+      <div className={`border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-950/20 z-10 ${isCollapsed ? 'py-3 px-1.5' : 'p-3'}`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2 justify-between'}`}>
           {!isCollapsed && (
-            <div className="text-left max-w-[130px] space-y-0.5">
-              <p className="text-sm font-bold text-slate-200 truncate">{user?.name}</p>
-              <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
-              <span className="inline-block mt-1 text-[9px] font-bold uppercase tracking-wider bg-brand-950/50 border border-brand-500/20 px-2 py-0.5 rounded text-brand-400">
+            <div className="text-left max-w-[120px] space-y-0.5">
+              <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate leading-none">{user?.name}</p>
+              <p className="text-[9px] text-zinc-400 dark:text-zinc-500 truncate leading-none">{user?.email}</p>
+              <span className="inline-block mt-1 text-[8px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
                 {user?.role?.replace('_', ' ')}
               </span>
             </div>
@@ -170,13 +161,13 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             size="sm"
             onClick={handleLogout}
             className={`
-              p-2.5 text-slate-500 hover:text-red-400 hover:bg-red-950/10 rounded-lg transition-all duration-300
+              p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 rounded transition-all duration-150 relative group
               ${isCollapsed ? 'w-full flex items-center justify-center' : ''}
             `}
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
             {isCollapsed && (
-              <div className="absolute left-16 px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs font-semibold text-red-400 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-glass z-50">
+              <div className="absolute left-14 px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-semibold text-red-400 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-150 whitespace-nowrap shadow-md z-50">
                 Sign Out
               </div>
             )}
