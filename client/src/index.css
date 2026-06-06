@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Global base font size for better readability */
+html {
+  font-size: 18px; /* ~1.125rem, larger than default 16px */
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -36,4 +41,9 @@
 /* Remove default focus outlines and provide custom keyboard rings */
 *:focus-visible {
   @apply outline-none ring-2 ring-brand-500/20 dark:ring-brand-500/30 border-brand-500;
+}
+
+/* Override tiny utilities */
+@layer utilities {
+  .text-xs { @apply text-sm; }
 }
