@@ -12,6 +12,9 @@ router.route('/')
   .get(LeadController.getAllLeads)
   .post(validate(schemas.leadCreate), LeadController.createLead);
 
+// Route for importing leads from Google Sheets
+router.post('/import-sheets', LeadController.importGoogleSheets);
+
 router.route('/:id')
   .patch(validate(schemas.leadUpdate), LeadController.updateLead)
   .delete(LeadController.deleteLead);

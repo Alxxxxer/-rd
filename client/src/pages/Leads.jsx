@@ -9,6 +9,7 @@ import {
   Calendar,
   AlertCircle,
   MessageSquare,
+  Database,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -17,6 +18,7 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import LeadDrawerModal from '../components/common/LeadDrawerModal';
+import Modal from '../components/ui/Modal';
 
 const Leads = () => {
   const { user: currentUser } = useAuth();
@@ -34,6 +36,13 @@ const Leads = () => {
   // 2. LEAD MODAL DRAWER STATE
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+
+  // 3. GOOGLE SHEETS IMPORT STATE
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [sheetUrl, setSheetUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const [importError, setImportError] = useState(null);
 
   // Debounce search input to limit unnecessary API requests
   useEffect(() => {
@@ -129,14 +138,30 @@ const Leads = () => {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenCreateDrawer}
-          className="flex items-center gap-1.5 py-2.5 px-4 self-start md:self-auto font-semibold text-sm uppercase tracking-wider"
-        >
-          <Plus size={14} />
-          Register Lead
-        </Button>
+        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSheetUrl('');
+              setImportResult(null);
+              setImportError(null);
+              setIsImportModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 py-2.5 px-4 font-semibold text-sm uppercase tracking-wider border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+          >
+            <Database size={14} className="text-zinc-500 dark:text-zinc-400" />
+            Import Google Sheet
+          </Button>
+
+          <Button
+            variant="primary"
+            onClick={handleOpenCreateDrawer}
+            className="flex items-center gap-1.5 py-2.5 px-4 font-semibold text-sm uppercase tracking-wider"
+          >
+            <Plus size={14} />
+            Register Lead
+          </Button>
+        </div>
       </div>
 
       {/* Scoped Filter Block */}
@@ -408,6 +433,121 @@ const Leads = () => {
           lead={selectedLead}
         />
       )}
+
+      {/* Google Sheets Import Modal */}
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Leads from Google Sheets"
+        className="max-w-xl"
+      >
+        <div className="space-y-5 text-left text-zinc-700 dark:text-zinc-300">
+          {!importResult ? (
+            <>
+              <div className="p-4 rounded bg-brand-500/5 border border-brand-500/20 text-xs space-y-2">
+                <p className="font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">How to import:</p>
+                <ol className="list-decimal pl-4 space-y-1.5 leading-relaxed">
+                  <li>Open your Google Sheet containing leads.</li>
+                  <li>Click <strong>Share</strong> in the top-right corner.</li>
+                  <li>Under <strong>General access</strong>, change setting to <strong>"Anyone with the link can view"</strong> (Viewer).</li>
+                  <li>Copy the spreadsheet link and paste it below.</li>
+                </ol>
+              </div>
+
+              <div className="p-4 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 text-xs space-y-2">
+                <p className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">Supported Columns (Auto-Mapped):</p>
+                <p className="leading-relaxed">
+                  The sheet must include a <strong>"Name"</strong> or <strong>"Lead Name"</strong> column. Optional columns: <strong>"Email"</strong>, <strong>"Phone"</strong>, <strong>"Campus"</strong> (Campus Name or Delegate Code), <strong>"Status"</strong>, <strong>"Amount"</strong>, and <strong>"Notes"</strong>.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Input
+                  label="Google Sheet Sharing URL"
+                  placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing"
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  disabled={isImporting}
+                  className="text-sm"
+                />
+              </div>
+
+              {importError && (
+                <div className="p-3 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-xs text-red-600 dark:text-red-400">
+                  {importError}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsImportModalOpen(false)}
+                  disabled={isImporting}
+                  className="px-4 py-2 text-sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={async () => {
+                    if (!sheetUrl.trim()) {
+                      setImportError('Please enter a Google Sheet URL.');
+                      return;
+                    }
+                    setIsImporting(true);
+                    setImportError(null);
+                    try {
+                      const response = await api.post('/leads/import-sheets', { sheetUrl });
+                      setImportResult(response.data.data);
+                      queryClient.invalidateQueries(['leads']);
+                    } catch (err) {
+                      setImportError(err.response?.data?.message || 'Failed to import Google Sheets. Please check the URL and sharing settings.');
+                    } finally {
+                      setIsImporting(false);
+                    }
+                  }}
+                  isLoading={isImporting}
+                  disabled={!sheetUrl.trim() || isImporting}
+                  className="px-4 py-2 text-sm"
+                >
+                  Import Leads
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-5 py-2 text-center">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center mx-auto text-emerald-600 dark:text-emerald-400">
+                <Plus size={24} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-100">Import Successful</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Your Google Sheets data has been processed.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+                <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850">
+                  <p className="text-[10px] uppercase font-bold text-zinc-450 dark:text-zinc-500 tracking-wider">Leads Imported</p>
+                  <p className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{importResult.count}</p>
+                </div>
+                <div className="p-3 rounded bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850">
+                  <p className="text-[10px] uppercase font-bold text-zinc-450 dark:text-zinc-500 tracking-wider">Duplicates Skipped</p>
+                  <p className="text-xl font-extrabold text-zinc-600 dark:text-zinc-400 mt-1">{importResult.skipped}</p>
+                </div>
+              </div>
+
+              <div className="flex justify-center border-t border-zinc-100 dark:border-zinc-800 pt-5">
+                <Button
+                  variant="primary"
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="px-6 py-2 text-sm uppercase tracking-wider font-semibold"
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </Layout>
   );
 };

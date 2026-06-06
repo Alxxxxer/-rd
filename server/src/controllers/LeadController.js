@@ -83,6 +83,30 @@ class LeadController {
     }
   }
 
+  async importGoogleSheets(req, res, next) {
+    try {
+      const { sheetUrl } = req.body;
+      const user = req.user;
+
+      if (!sheetUrl) {
+        return res.status(400).json({
+          success: false,
+          message: 'Google Sheets URL is required.'
+        });
+      }
+
+      const result = await LeadService.importGoogleSheets(user, sheetUrl);
+
+      res.status(200).json({
+        success: true,
+        message: `${result.count} leads processed successfully.`,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async deleteLead(req, res, next) {
     try {
       const { id } = req.params;
