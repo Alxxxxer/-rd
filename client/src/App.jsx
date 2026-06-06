@@ -433,11 +433,16 @@ const DashboardHome = () => {
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-650 dark:text-zinc-300">
-                          {lead.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          {lead.name ? lead.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'L'}
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{lead.name}</p>
-                          <p className="text-xs text-zinc-400 dark:text-zinc-550 mt-0.5">Source: {lead.source}</p>
+                        <div className="text-left">
+                          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{lead.name || 'Unknown Name'}</p>
+                          {lead.college && (
+                            <p className="text-xs text-zinc-550 dark:text-zinc-400 font-semibold leading-tight mt-0.5">
+                              {lead.college}
+                            </p>
+                          )}
+                          <p className="text-xs text-zinc-400 dark:text-zinc-550 mt-1">Source: {lead.source}</p>
                         </div>
                       </div>
 

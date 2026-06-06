@@ -86,6 +86,7 @@ const schemas = {
 
   leadCreate: Joi.object({
     name: Joi.string().min(2).max(100).required(),
+    college: Joi.string().allow('').optional(),
     email: Joi.string().email().allow('').optional().lowercase(),
     phone: Joi.string().allow('').optional(),
     source: Joi.string().allow('').optional(),
@@ -101,6 +102,7 @@ const schemas = {
 
   leadUpdate: Joi.object({
     name: Joi.string().min(2).max(100).optional(),
+    college: Joi.string().allow('').optional(),
     email: Joi.string().email().allow('').optional().lowercase(),
     phone: Joi.string().allow('').optional(),
     source: Joi.string().allow('').optional(),

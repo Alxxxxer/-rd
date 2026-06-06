@@ -13,6 +13,7 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
 
   // 1. DYNAMIC FORM STATE
   const [name, setName] = useState('');
+  const [college, setCollege] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [source, setSource] = useState('Manual');
@@ -33,6 +34,7 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
   useEffect(() => {
     if (lead) {
       setName(lead.name || '');
+      setCollege(lead.college || '');
       setEmail(lead.email || '');
       setPhone(lead.phone || '');
       setSource(lead.source || 'Manual');
@@ -52,6 +54,7 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
     } else {
       // Clear forms for new registrations
       setName('');
+      setCollege('');
       setEmail('');
       setPhone('');
       setSource('Manual');
@@ -151,6 +154,7 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
 
     const payload = {
       name,
+      college: college || '',
       email,
       phone,
       source,
@@ -186,7 +190,7 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
       isOpen={isOpen}
       onClose={onClose}
       title={lead ? `Edit Prospect: ${name}` : 'Register New Lead'}
-      className="max-w-4xl md:p-8"
+      className="max-w-5xl md:p-8"
     >
       {formError && (
         <div className="mb-4 p-3.5 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 text-red-650 dark:text-red-400 text-xs flex items-center gap-2 text-left animate-fade-in">
@@ -207,6 +211,15 @@ const LeadDrawerModal = ({ isOpen, onClose, lead }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+          />
+
+          <Input
+            label="College/Campus Name"
+            type="text"
+            id="college"
+            placeholder="e.g. Jamia Millia Islamia"
+            value={college}
+            onChange={(e) => setCollege(e.target.value)}
           />
 
           <Input

@@ -9,6 +9,11 @@ const leadSchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, 'Name cannot exceed 100 characters']
     },
+    college: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     email: {
       type: String,
       trim: true,

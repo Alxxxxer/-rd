@@ -36,7 +36,7 @@ class LeadService {
   }
 
   async createLead(user, leadData) {
-    const { name, email, phone, source, status, assignedTo, delegate, followUpDate, initialNote, amount, paymentStatus, paymentMethod } = leadData;
+    const { name, college, email, phone, source, status, assignedTo, delegate, followUpDate, initialNote, amount, paymentStatus, paymentMethod } = leadData;
 
     // Build the initial notes array if provided
     const notes = [];
@@ -50,6 +50,7 @@ class LeadService {
     // Create lead record
     const lead = await LeadRepository.create({
       name,
+      college: college || '',
       email,
       phone,
       source,
@@ -355,6 +356,12 @@ class LeadService {
         continue;
       }
 
+      // Resolve College Name
+      let college = '';
+      if (campusIdx !== -1 && row[campusIdx]) {
+        college = row[campusIdx].trim();
+      }
+
       // Resolve Campus Delegate
       let delegateId = null;
       if (campusIdx !== -1 && row[campusIdx]) {
@@ -394,6 +401,7 @@ class LeadService {
       // Create Lead
       const newLead = await LeadRepository.create({
         name,
+        college,
         email,
         phone,
         source: 'Google Sheets',

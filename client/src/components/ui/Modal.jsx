@@ -39,7 +39,8 @@ const Modal = ({
       {/* Flat Modal Box Container */}
       <Card
         className={`
-          w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-md z-10 p-6 md:p-7 relative
+          w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-md z-10 p-6 md:p-7 relative
+          ${className.includes('max-w-') ? '' : 'max-w-lg'}
           ${className}
         `}
       >
