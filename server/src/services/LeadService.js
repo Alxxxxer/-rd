@@ -291,7 +291,13 @@ class LeadService {
 
     // 4. Resolve Columns
     const headers = rows[0].map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
-    const nameIdx = headers.findIndex(h => h.includes('name') || h === 'prospect' || h === 'lead');
+    const nameIdx = headers.findIndex(h => 
+      (h.includes('name') || h === 'prospect' || h === 'lead') && 
+      !h.includes('college') && 
+      !h.includes('campus') && 
+      !h.includes('university') && 
+      !h.includes('school')
+    );
     const emailIdx = headers.findIndex(h => h.includes('email') || h.includes('mail'));
     const phoneIdx = headers.findIndex(h => h.includes('phone') || h.includes('contact') || h.includes('mobile') || h.includes('number'));
     const campusIdx = headers.findIndex(h => h.includes('campus') || h.includes('college') || h.includes('university') || h.includes('code') || h.includes('delegate'));
@@ -300,8 +306,10 @@ class LeadService {
     const noteIdx = headers.findIndex(h => h.includes('note') || h.includes('comment') || h.includes('remark'));
     const assignedIdx = headers.findIndex(h => h.includes('assigned') || h.includes('owner') || h.includes('executive'));
 
+    logger.info(`Google Sheets import header mapping: Name Column='${rows[0][nameIdx] || 'Not Found'}', College Column='${rows[0][campusIdx] || 'Not Found'}'`);
+
     if (nameIdx === -1) {
-      throw new AppError('Google Sheet must contain a "Name" or "Lead Name" column.', 400);
+      throw new AppError('Google Sheet must contain a "Name", "Lead Name", or "Student Name" column.', 400);
     }
 
     // 5. Pre-fetch Delegates and Users for quick lookup
