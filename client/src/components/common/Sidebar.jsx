@@ -72,8 +72,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   return (
     <aside
       className={`
-        h-screen sticky top-0 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-900 flex flex-col justify-between transition-all duration-200 z-30
-        ${isCollapsed ? 'w-20' : 'w-72'}
+        h-screen bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-900 flex flex-col justify-between transition-all duration-200 z-40
+        fixed md:sticky top-0 left-0
+        ${isCollapsed ? 'w-0 -translate-x-full md:translate-x-0 md:w-20' : 'w-72 translate-x-0'}
       `}
     >
       <div className="z-10 flex flex-col h-full">

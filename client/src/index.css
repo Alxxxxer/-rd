@@ -1,8 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Global base font size for better readability */
+/* Responsive base font size for premium scaling across all device viewports */
 html {
-  font-size: 18px; /* ~1.125rem, larger than default 16px */
+  font-size: 15px; /* Mobile base */
+}
+@media (min-width: 640px) {
+  html {
+    font-size: 16px; /* Tablet base */
+  }
+}
+@media (min-width: 1024px) {
+  html {
+    font-size: 17px; /* Medium screen/laptop */
+  }
+}
+@media (min-width: 1440px) {
+  html {
+    font-size: 18px; /* Wide screen desktop */
+  }
 }
 
 @tailwind base;
@@ -41,9 +56,4 @@ html {
 /* Remove default focus outlines and provide custom keyboard rings */
 *:focus-visible {
   @apply outline-none ring-2 ring-brand-500/20 dark:ring-brand-500/30 border-brand-500;
-}
-
-/* Override tiny utilities */
-@layer utilities {
-  .text-xs { @apply text-sm; }
 }

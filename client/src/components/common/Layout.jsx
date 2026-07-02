@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Bell, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { Bell, ShieldCheck, Sun, Moon, Menu } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  // Auto-collapse sidebar on mobile/tablet screen sizes
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="h-screen flex bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 overflow-hidden relative">
@@ -15,16 +27,33 @@ const Layout = ({ children }) => {
       {/* Reusable Collapsible Navigation Sidebar */}
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
+      {/* Mobile Drawer Backdrop */}
+      {!isCollapsed && (
+        <div 
+          className="md:hidden fixed inset-0 bg-zinc-950/30 backdrop-blur-[1px] z-35 transition-opacity duration-200"
+          onClick={() => setIsCollapsed(true)}
+        />
+      )}
+
       {/* Main Workspace Scrolling area */}
       <main className="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto bg-zinc-50/50 dark:bg-zinc-950">
         
         {/* Top Header Navbar */}
         <header className="h-20 border-b border-zinc-200 dark:border-zinc-900 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-6 md:px-8">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 font-sans uppercase">
-            <ShieldCheck size={14} className="text-brand-500" />
-            <span>Sales CRM</span>
-            <span className="text-zinc-300 dark:text-zinc-700 font-normal">/</span>
-            <span className="text-zinc-800 dark:text-zinc-200">Console Desk</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="md:hidden p-1.5 rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white mr-1"
+              title="Toggle Sidebar"
+            >
+              <Menu size={16} />
+            </button>
+            <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 font-sans uppercase">
+              <ShieldCheck size={14} className="text-brand-500" />
+              <span>Sales CRM</span>
+              <span className="text-zinc-300 dark:text-zinc-700 font-normal">/</span>
+              <span className="text-zinc-800 dark:text-zinc-200">Console Desk</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -70,7 +99,7 @@ const Layout = ({ children }) => {
         </header>
 
         {/* Dynamic Page Content */}
-        <div className="p-6 md:p-8 flex-1 w-full px-6 md:px-8 py-6 md:py-8 space-y-6 z-10">
+        <div className="flex-1 w-full p-6 md:p-8 space-y-6 z-10">
           {children}
         </div>
       </main>
