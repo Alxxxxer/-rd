@@ -9,14 +9,7 @@ const Layout = ({ children }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const [diagnostics, setDiagnostics] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    dpr: window.devicePixelRatio,
-    fontSize: '16px'
-  });
-
-  // Auto-collapse sidebar & track browser environment diagnostics
+  // Auto-collapse sidebar on mobile/tablet screen sizes
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
@@ -25,35 +18,7 @@ const Layout = ({ children }) => {
     };
     handleResize();
     window.addEventListener('resize', handleResize);
-
-    const updateDiagnostics = () => {
-      setDiagnostics({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        dpr: window.devicePixelRatio,
-        fontSize: window.getComputedStyle(document.documentElement).fontSize
-      });
-    };
-    updateDiagnostics();
-    window.addEventListener('resize', updateDiagnostics);
-
-    // Track browser zoom scale changes
-    let matchMediaTracker;
-    try {
-      const mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
-      matchMediaTracker = window.matchMedia(mqString);
-      matchMediaTracker.addEventListener('change', updateDiagnostics);
-    } catch (e) {
-      // fallback
-    }
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('resize', updateDiagnostics);
-      if (matchMediaTracker) {
-        matchMediaTracker.removeEventListener('change', updateDiagnostics);
-      }
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -138,29 +103,6 @@ const Layout = ({ children }) => {
           {children}
         </div>
       </main>
-
-      {/* Viewport & Device Diagnostics Badge (Highly helpful for cross-browser debugging) */}
-      <div className="fixed bottom-3 right-3 z-50 p-2.5 rounded-lg bg-zinc-900/95 dark:bg-zinc-950/95 text-white border border-zinc-700/50 backdrop-blur text-[10px] font-mono shadow-xl flex flex-col gap-1 select-none pointer-events-auto opacity-75 hover:opacity-100 transition-opacity">
-        <div className="font-bold border-b border-zinc-800 pb-1 mb-1 flex items-center justify-between gap-3">
-          <span>🖥️ Browser UI Diagnostics</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-zinc-400 font-sans">Viewport:</span>
-          <span className="font-semibold">{diagnostics.width}px × {diagnostics.height}px</span>
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-zinc-400 font-sans">Browser Zoom:</span>
-          <span className="font-semibold text-brand-400">{Math.round(diagnostics.dpr * 100)}% ({diagnostics.dpr}x)</span>
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-zinc-400 font-sans">Computed Font:</span>
-          <span className="font-semibold text-amber-400">{diagnostics.fontSize}</span>
-        </div>
-        <div className="text-[8px] text-zinc-500 mt-1 border-t border-zinc-800 pt-1 text-center">
-          Press Ctrl + 0 to reset zoom
-        </div>
-      </div>
     </div>
   );
 };
