@@ -116,21 +116,33 @@ const schemas = {
   }),
 
   delegateCreate: Joi.object({
-    userId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
-      'any.required': 'Target user ID reference is required',
-      'string.pattern.base': 'Invalid target user ID reference'
+    name: Joi.string().min(2).max(100).required().messages({
+      'any.required': 'Delegate name is required'
     }),
-    campus: Joi.string().min(2).max(100).required().messages({
-      'any.required': 'Campus name is required'
+    campus: Joi.string().min(2).max(150).required().messages({
+      'any.required': 'Campus/College name is required'
     }),
-    code: Joi.string().min(2).max(30).required().messages({
-      'any.required': 'Unique delegate code is required'
-    })
+    email: Joi.string().email().allow('', null).optional().lowercase(),
+    phone: Joi.string().allow('', null).optional(),
+    whatsapp: Joi.string().allow('', null).optional(),
+    department: Joi.string().allow('', null).optional(),
+    status: Joi.string().valid('PENDING', 'AGREED', 'DECLINED').optional(),
+    code: Joi.string().min(2).max(30).allow('', null).optional(),
+    userId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
+    assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional()
   }),
 
   delegateUpdate: Joi.object({
-    campus: Joi.string().min(2).max(100).optional(),
-    code: Joi.string().min(2).max(30).optional()
+    name: Joi.string().min(2).max(100).optional(),
+    campus: Joi.string().min(2).max(150).optional(),
+    email: Joi.string().email().allow('', null).optional().lowercase(),
+    phone: Joi.string().allow('', null).optional(),
+    whatsapp: Joi.string().allow('', null).optional(),
+    department: Joi.string().allow('', null).optional(),
+    status: Joi.string().valid('PENDING', 'AGREED', 'DECLINED').optional(),
+    code: Joi.string().min(2).max(30).allow('', null).optional(),
+    userId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
+    assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional()
   })
 };
 

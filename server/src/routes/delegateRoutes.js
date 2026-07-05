@@ -15,7 +15,10 @@ router.route('/')
   .get(DelegateController.getAllDelegates)
   .post(validate(schemas.delegateCreate), DelegateController.createDelegate);
 
+router.post('/import-sheets', DelegateController.importGoogleSheets);
+
 router.route('/:id')
+  .get(DelegateController.getDelegateById)
   .patch(validate(schemas.delegateUpdate), DelegateController.updateDelegate);
 
 module.exports = router;
