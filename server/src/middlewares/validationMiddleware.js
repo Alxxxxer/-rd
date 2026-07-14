@@ -142,7 +142,8 @@ const schemas = {
     status: Joi.string().valid('PENDING', 'AGREED', 'DECLINED').optional(),
     code: Joi.string().min(2).max(30).allow('', null).optional(),
     userId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
-    assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional()
+    assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null, '').optional(),
+    noteText: Joi.string().min(1).max(2000).optional() // Allow note/call log additions
   })
 };
 

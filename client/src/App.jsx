@@ -14,6 +14,7 @@ import ActivityLogs from './pages/ActivityLogs';
 import Leads from './pages/Leads';
 import Delegates from './pages/Delegates';
 import Leaderboard from './pages/Leaderboard';
+import NotFound from './pages/NotFound';
 import Layout from './components/common/Layout';
 import Card from './components/ui/Card';
 
@@ -605,8 +606,8 @@ function App() {
                 }
               />
 
-              {/* Catch-all Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Catch-all: 404 Not Found */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>

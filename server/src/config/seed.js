@@ -90,19 +90,31 @@ const seedDatabase = async () => {
     // 4. Seed Delegate Profiles
     const delegatesData = [
       {
+        name: 'Emily Executive',
         user: emilyUser._id,
         campus: 'Stanford University',
-        code: 'STANFORD-DEL-01'
+        code: 'STANFORD-DEL-01',
+        status: 'AGREED',
+        email: emilyUser.email,
+        department: 'Computer Science'
       },
       {
+        name: 'Eric Executive',
         user: ericUser._id,
         campus: 'Massachusetts Institute of Technology',
-        code: 'MIT-DEL-02'
+        code: 'MIT-DEL-02',
+        status: 'AGREED',
+        email: ericUser.email,
+        department: 'Electrical Engineering'
       },
       {
+        name: 'Ethan Executive',
         user: ethanUser._id,
         campus: 'University of California, Berkeley',
-        code: 'UCB-DEL-03'
+        code: 'UCB-DEL-03',
+        status: 'AGREED',
+        email: ethanUser.email,
+        department: 'Business Administration'
       }
     ];
 

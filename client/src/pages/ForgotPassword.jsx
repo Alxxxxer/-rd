@@ -120,7 +120,8 @@ const ForgotPassword = () => {
                 </p>
               </div>
 
-              {devToken && (
+              {/* Dev-only token helper — hidden in production builds */}
+              {devToken && import.meta.env.DEV && (
                 <div className="p-3.5 rounded border border-brand-200/50 dark:border-brand-800/40 bg-brand-50/10 dark:bg-brand-950/20 text-left space-y-2.5">
                   <div className="flex justify-between items-center">
                     <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">

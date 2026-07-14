@@ -23,12 +23,15 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      // Allow requests with no origin (mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      
-      const isLocalhost = origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:');
+
       const isAllowedOrigin = origin === env.CORS_ORIGIN;
-      
+      // Only allow arbitrary localhost ports in development mode
+      const isLocalhost =
+        env.NODE_ENV !== 'production' &&
+        (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
+
       if (isLocalhost || isAllowedOrigin) {
         callback(null, true);
       } else {

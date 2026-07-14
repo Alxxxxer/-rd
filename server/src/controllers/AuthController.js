@@ -48,7 +48,8 @@ class AuthController {
 
       res.status(200).json({
         success: true,
-        accessToken: result.accessToken
+        accessToken: result.accessToken,
+        user: result.user // Include user so frontend can restore session in one round-trip
       });
     } catch (error) {
       next(error);

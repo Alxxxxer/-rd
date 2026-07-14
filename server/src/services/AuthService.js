@@ -103,8 +103,18 @@ class AuthService {
     // Generate new access token
     const accessToken = generateAccessToken(user);
 
+    const sanitizedUser = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      lastLogin: user.lastLogin
+    };
+
     return {
-      accessToken
+      accessToken,
+      user: sanitizedUser
     };
   }
 

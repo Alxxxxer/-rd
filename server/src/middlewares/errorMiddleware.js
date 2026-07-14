@@ -10,9 +10,10 @@ const handleCastErrorDB = (err) => {
 
 // Handler for duplicate fields (MongoDB error code 11000)
 const handleDuplicateFieldsDB = (err) => {
-  // Extract duplicate field value
-  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-  const message = `Duplicate value: ${value}. Please use another value!`;
+  // Extract duplicate field value from err.message (modern MongoDB driver)
+  const match = (err.message || '').match(/("[^"]+"|'[^']+')/);
+  const value = match ? match[0] : 'unknown';
+  const message = `Duplicate value: ${value}. Please use another value.`;
   return new AppError(message, 400);
 };
 
